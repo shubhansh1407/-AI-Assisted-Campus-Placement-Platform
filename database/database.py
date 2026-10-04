@@ -113,3 +113,28 @@ def get_roles_by_company(company_name):
     roles = [row['role'] for row in cursor.fetchall()]
     conn.close()
     return roles
+
+def insert_user(username, password, role):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO users (username, password, role)
+            VALUES (?, ?, ?)
+        ''', (username, password, role))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+def verify_user(username, password):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT role FROM users WHERE username = ? AND password = ?', (username, password))
+    user = cursor.fetchone()
+    conn.close()
+    if user:
+        return user['role']
+    return None

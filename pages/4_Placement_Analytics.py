@@ -4,6 +4,13 @@ import plotly.express as px
 from database.database import get_company_roles, get_placements
 
 st.title("Placement Analytics")
+
+if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
+    st.warning("Please login from the main page.")
+    st.stop()
+
+from utils.helpers import apply_student_sidebar_hiding
+apply_student_sidebar_hiding()
 st.markdown("Descriptive analytics and visualization of campus placement data.")
 
 placements_data = get_placements()
@@ -20,7 +27,7 @@ else:
 
     valid_packages = df_place.dropna(subset=['package_num'])
     
-    st.header("A. Overview")
+    st.header("Overview")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Placements", len(df_place))
     col2.metric("Total Companies", df_place['company_name'].nunique())
@@ -33,14 +40,14 @@ else:
     
     col1, col2 = st.columns(2)
     with col1:
-        st.header("B. Company-wise Analysis")
+        st.header("Company-wise Analysis")
         company_counts = df_place['company_name'].value_counts().reset_index()
         company_counts.columns = ['Company', 'Placements']
         fig_company = px.bar(company_counts, x='Company', y='Placements', title="Placements by Company")
         st.plotly_chart(fig_company, use_container_width=True)
         
     with col2:
-        st.header("C. Role-wise Analysis")
+        st.header("Role-wise Analysis")
         role_counts = df_place['role'].value_counts().reset_index()
         role_counts.columns = ['Role', 'Placements']
         fig_role = px.bar(role_counts, x='Role', y='Placements', title="Placements by Role", color_discrete_sequence=['#ff7f0e'])
@@ -48,7 +55,7 @@ else:
         
     st.divider()
     
-    st.header("D & E. Package & Year Analysis")
+    st.header("Package & Year Analysis")
     col1, col2 = st.columns(2)
     with col1:
         if not valid_packages.empty:
@@ -79,7 +86,7 @@ else:
 st.divider()
 
 if roles_data:
-    st.header("F. Required Skills Analysis")
+    st.header("Required Skills Analysis")
     df_roles = pd.DataFrame(roles_data)
     
     all_skills = []

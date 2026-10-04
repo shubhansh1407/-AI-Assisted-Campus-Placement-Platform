@@ -25,3 +25,9 @@ CREATE TABLE IF NOT EXISTS placements (
     package TEXT,
     year INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    username TEXT PRIMARY KEY,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL
+);

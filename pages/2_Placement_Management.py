@@ -9,6 +9,10 @@ from utils.helpers import STANDARDIZED_SKILLS
 
 st.title("Placement Management (Admin)")
 
+if 'logged_in' not in st.session_state or st.session_state['role'] != 'admin':
+    st.warning("Admin access required.")
+    st.stop()
+
 tab1, tab2, tab3 = st.tabs(["Add Company / Role", "Add Placement Record", "CSV Bulk Upload"])
 
 with tab1:

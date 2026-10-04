@@ -1,5 +1,15 @@
-venv/
-.venv/
+# Environments
+.env
+
+# Python
 __pycache__/
 *.pyc
-.env
+*.pyo
+*.pyd
+
+# Database (optional: remove this if you want to push your local DB to GitHub)
+data/*.db
+
+# OS Files
+.DS_Store
+Thumbs.db

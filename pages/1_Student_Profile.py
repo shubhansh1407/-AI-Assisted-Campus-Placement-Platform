@@ -6,6 +6,15 @@ from utils.gemini_helper import extract_resume_data
 
 st.title("Student Profile")
 
+if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
+    st.warning("Please login from the main page.")
+    st.stop()
+
+username = st.session_state['username']
+
+from utils.helpers import apply_student_sidebar_hiding
+apply_student_sidebar_hiding()
+
 tab1, tab2 = st.tabs(["Manual Entry", "Resume/CV Upload (AI)"])
 
 def save_profile(name, branch, cgpa, skills, projects, certifications):
@@ -26,7 +35,8 @@ def save_profile(name, branch, cgpa, skills, projects, certifications):
 with tab1:
     st.markdown("Enter your details to create or update your profile manually.")
     with st.form("manual_profile_form"):
-        name = st.text_input("Full Name (Required)")
+        st.write(f"Editing profile for: {username}")
+        name = username
         branch = st.text_input("Branch")
         cgpa = st.number_input("CGPA", min_value=0.0, max_value=10.0, step=0.1)
         skills = st.multiselect("Skills", options=STANDARDIZED_SKILLS)
@@ -72,7 +82,8 @@ with tab2:
         st.subheader("Review & Edit Extracted Profile")
         
         with st.form("extracted_profile_form"):
-            name_val = st.text_input("Full Name (Required)", value=data.get('name', ''))
+            st.write(f"Editing profile for: {username}")
+            name_val = username
             branch_val = st.text_input("Branch", value=data.get('branch', ''))
             
             try:
@@ -113,9 +124,17 @@ with tab2:
 
 st.divider()
 st.subheader("Currently Stored Student Records")
-students = get_students()
-if students:
-    df = pd.DataFrame(students)
-    st.dataframe(df, use_container_width=True)
+if st.session_state['role'] == 'admin':
+    students = get_students()
+    if students:
+        df = pd.DataFrame(students)
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("No student records found.")
 else:
-    st.info("No student records found.")
+    students = get_students()
+    my_profile = [s for s in students if s['name'] == username]
+    if my_profile:
+        st.dataframe(pd.DataFrame(my_profile), use_container_width=True)
+    else:
+        st.info("Your profile hasn't been created yet.")

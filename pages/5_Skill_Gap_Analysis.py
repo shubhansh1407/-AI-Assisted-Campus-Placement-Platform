@@ -3,6 +3,13 @@ import pandas as pd
 from database.database import get_students, get_company_roles
 
 st.title("Skill-Gap Analysis")
+
+if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
+    st.warning("Please login from the main page.")
+    st.stop()
+
+from utils.helpers import apply_student_sidebar_hiding
+apply_student_sidebar_hiding()
 st.markdown("Compare a student's current skills against the required skills for a target role.")
 
 students_data = get_students()
@@ -17,7 +24,11 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         student_names = df_students['name'].tolist()
-        selected_student = st.selectbox("Select Student", student_names)
+        if st.session_state['role'] == 'admin':
+            selected_student = st.selectbox("Select Student", student_names)
+        else:
+            selected_student = st.session_state['username']
+            st.info(f"Student: {selected_student}")
     
     with col2:
         df_roles['company_role'] = df_roles['company_name'] + " - " + df_roles['role']
@@ -25,6 +36,7 @@ else:
         selected_target = st.selectbox("Select Target Company & Role", company_role_list)
         
     if st.button("Analyze Skill Gap"):
+        st.session_state['skill_gap_messages'] = []
         st.divider()
         
         student_row = df_students[df_students['name'] == selected_student].iloc[0]
@@ -70,9 +82,17 @@ if 'gap_analysis' in st.session_state:
             
     st.divider()
     
-    st.subheader("🤖 AI Career Explanation")
-    if st.button("Get AI Recommendations for this Gap"):
-        with st.spinner("AI is analyzing your skill gap..."):
+    st.subheader("🤖 AI Career Mentorship")
+    
+    if "skill_gap_messages" not in st.session_state:
+        st.session_state["skill_gap_messages"] = []
+        
+    for msg in st.session_state["skill_gap_messages"]:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+            
+    if not st.session_state["skill_gap_messages"]:
+        if st.button("Get AI Recommendations for this Gap"):
             prompt = f"""
             A student wants to apply for a '{gap_data['target']}' role.
             They already have these skills: {", ".join(gap_data['already_have']) if gap_data['already_have'] else 'None'}
@@ -86,6 +106,25 @@ if 'gap_analysis' in st.session_state:
             
             Do not invent placement statistics. Give practical, beginner-friendly advice.
             """
+            st.session_state["skill_gap_messages"].append({"role": "user", "content": "Please analyze my skill gap and give me recommendations."})
+            
             from utils.gemini_helper import generate_ai_response
-            ai_response = generate_ai_response(prompt)
-            st.write(ai_response)
+            with st.spinner("AI is analyzing your skill gap..."):
+                ai_response = generate_ai_response(prompt)
+                
+            st.session_state["skill_gap_messages"].append({"role": "assistant", "content": ai_response})
+            st.rerun()
+            
+    if st.session_state["skill_gap_messages"]:
+        if follow_up := st.chat_input("Ask a follow-up question...", key="gap_chat"):
+            st.session_state["skill_gap_messages"].append({"role": "user", "content": follow_up})
+            
+            history = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state["skill_gap_messages"][:-1]])
+            full_prompt = f"Context: Skill gap analysis for {gap_data['target']}.\n\nHistory:\n{history}\n\nUser: {follow_up}\nAssistant:"
+            
+            from utils.gemini_helper import generate_ai_response
+            with st.spinner("Thinking..."):
+                ai_response = generate_ai_response(full_prompt)
+                
+            st.session_state["skill_gap_messages"].append({"role": "assistant", "content": ai_response})
+            st.rerun()
