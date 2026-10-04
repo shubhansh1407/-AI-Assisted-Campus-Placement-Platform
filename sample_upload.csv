@@ -1,0 +1,7 @@
+Company,Role,Min_CGPA,Required_Skills,Package
+Google,Software Engineer,8.5,"Python, Java",35.0
+Microsoft,Data Scientist,8.0,"Python, Machine Learning",25.5
+StartupX,Frontend Dev,,"HTML, CSS, React",8.0
+,Ghost Role,8.0,Java,10.0
+InvalidCo,RoleX,11.0,Python,-5.0
+Google,Software Engineer,8.5,"Python, Java",35.0
