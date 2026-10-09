@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL, -- This acts as the username
+    full_name TEXT,
     branch TEXT,
     cgpa REAL,
     skills TEXT,

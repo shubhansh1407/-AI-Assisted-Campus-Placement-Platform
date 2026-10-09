@@ -17,24 +17,24 @@ def initialize_database():
     conn.commit()
     conn.close()
 
-def insert_student(name, branch, cgpa, skills, projects, certifications):
+def insert_student(name, full_name, branch, cgpa, skills, projects, certifications):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO students (name, branch, cgpa, skills, projects, certifications)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (name, branch, cgpa, skills, projects, certifications))
+        INSERT INTO students (name, full_name, branch, cgpa, skills, projects, certifications)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (name, full_name, branch, cgpa, skills, projects, certifications))
     conn.commit()
     conn.close()
 
-def update_student(name, branch, cgpa, skills, projects, certifications):
+def update_student(name, full_name, branch, cgpa, skills, projects, certifications):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE students 
-        SET branch = ?, cgpa = ?, skills = ?, projects = ?, certifications = ?
+        SET full_name = ?, branch = ?, cgpa = ?, skills = ?, projects = ?, certifications = ?
         WHERE name = ?
-    ''', (branch, cgpa, skills, projects, certifications, name))
+    ''', (full_name, branch, cgpa, skills, projects, certifications, name))
     conn.commit()
     conn.close()
 
@@ -69,7 +69,7 @@ def insert_placement(student_name, company_name, role, package, year):
 def get_students():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT name, branch, cgpa, skills, projects, certifications FROM students')
+    cursor.execute('SELECT name, full_name, branch, cgpa, skills, projects, certifications FROM students')
     students = cursor.fetchall()
     conn.close()
     return [dict(row) for row in students]

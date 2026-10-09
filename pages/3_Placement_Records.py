@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from database.database import get_company_roles, get_placements
+from database.database import get_company_roles, get_placements, get_students
 
 st.title("Company & Placement Records")
 
@@ -32,10 +32,17 @@ with tab1:
 
 with tab2:
     placements_data = get_placements()
+    students_data = get_students()
     if placements_data:
         df_place = pd.DataFrame(placements_data)
         st.markdown(f"#### Total Placements: `{len(df_place)}`")
         
+        if students_data:
+            df_s = pd.DataFrame(students_data)
+            df_place = pd.merge(df_place, df_s[['name', 'full_name']], left_on='student_name', right_on='name', how='left')
+            df_place['student_name'] = df_place.apply(lambda r: f"{r['full_name']} ({r['student_name']})" if pd.notnull(r.get('full_name')) and str(r.get('full_name')).strip() else r['student_name'], axis=1)
+            df_place.drop(columns=['name', 'full_name'], inplace=True, errors='ignore')
+            
         search_placement = st.text_input("🔍 Search by Student or Company", key="search_place", placeholder="e.g., Alice or Microsoft")
         if search_placement:
             mask = df_place['student_name'].str.contains(search_placement, case=False, na=False) | df_place['company_name'].str.contains(search_placement, case=False, na=False)

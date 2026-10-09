@@ -19,3 +19,15 @@ A Streamlit-based campus placement platform designed to organize placement data,
 3. `pip install -r requirements.txt`
 4. `python populate_db.py`
 5. `streamlit run app.py`
+
+## Demo Accounts
+
+If you want to explore the project, you can log in using the following test credentials:
+
+**Admin Account**
+- **Username:** `admin`
+- **Password:** `admin123`
+
+**Student Accounts**
+- **Username:** `student1` to `student23`
+- **Password:** matches the student number (e.g., `pass1` for `student1`, `pass2` for `student2`)

@@ -17,19 +17,21 @@ apply_student_sidebar_hiding()
 
 tab1, tab2 = st.tabs(["Manual Entry", "Resume/CV Upload (AI)"])
 
-def save_profile(name, branch, cgpa, skills, projects, certifications):
+def save_profile(name, full_name, branch, cgpa, skills, projects, certifications):
     if not name.strip():
-        return False, "Name cannot be empty."
+        return False, "Username cannot be empty."
+    if not full_name.strip():
+        return False, "Full Name cannot be empty."
     
     skills_str = ", ".join(skills) if isinstance(skills, list) else skills
     cgpa_val = float(cgpa) if cgpa else 0.0
     
     existing = get_student_by_name(name.strip())
     if existing:
-        update_student(name.strip(), branch, cgpa_val, skills_str, projects, certifications)
+        update_student(name.strip(), full_name.strip(), branch, cgpa_val, skills_str, projects, certifications)
         return True, f"Profile updated successfully for {name.strip()}!"
     else:
-        insert_student(name.strip(), branch, cgpa_val, skills_str, projects, certifications)
+        insert_student(name.strip(), full_name.strip(), branch, cgpa_val, skills_str, projects, certifications)
         return True, f"Profile created successfully for {name.strip()}!"
 
 with tab1:
@@ -37,14 +39,29 @@ with tab1:
     with st.form("manual_profile_form"):
         st.write(f"Editing profile for: {username}")
         name = username
-        branch = st.text_input("Branch")
-        cgpa = st.number_input("CGPA", min_value=0.0, max_value=10.0, step=0.1)
-        skills = st.multiselect("Skills", options=STANDARDIZED_SKILLS)
-        projects = st.text_area("Projects (Brief descriptions)")
-        certifications = st.text_area("Certifications (Comma separated)")
+        
+        # Load existing data if profile exists
+        existing = get_student_by_name(username)
+        def_full_name = existing['full_name'] if existing and 'full_name' in existing.keys() and existing['full_name'] else ""
+        def_branch = existing['branch'] if existing else ""
+        def_cgpa = existing['cgpa'] if existing else 0.0
+        def_skills = existing['skills'].split(', ') if existing and existing['skills'] else []
+        def_projects = existing['projects'] if existing else ""
+        def_cert = existing['certifications'] if existing else ""
+
+        full_name = st.text_input("Full Name", value=def_full_name)
+        branch = st.text_input("Branch", value=def_branch)
+        cgpa = st.number_input("CGPA", min_value=0.0, max_value=10.0, step=0.1, value=def_cgpa)
+        
+        # Ensure only standardized skills are selected to avoid errors
+        safe_skills = [s for s in def_skills if s in STANDARDIZED_SKILLS]
+        skills = st.multiselect("Skills", options=STANDARDIZED_SKILLS, default=safe_skills)
+        
+        projects = st.text_area("Projects (Brief descriptions)", value=def_projects)
+        certifications = st.text_area("Certifications (Comma separated)", value=def_cert)
         
         if st.form_submit_button("Save Profile"):
-            success, msg = save_profile(name, branch, cgpa, skills, projects, certifications)
+            success, msg = save_profile(name, full_name, branch, cgpa, skills, projects, certifications)
             if success: st.success(msg)
             else: st.error(msg)
 
@@ -84,6 +101,7 @@ with tab2:
         with st.form("extracted_profile_form"):
             st.write(f"Editing profile for: {username}")
             name_val = username
+            full_name_val = st.text_input("Full Name", value=data.get('name', ''))
             branch_val = st.text_input("Branch", value=data.get('branch', ''))
             
             try:
@@ -115,7 +133,7 @@ with tab2:
             
             if st.form_submit_button("Confirm & Save Profile"):
                 all_skills = skills_input + [str(u) for u in unmatched]
-                success, msg = save_profile(name_val, branch_val, cgpa_input, all_skills, projects_input, certifications_input)
+                success, msg = save_profile(name_val, full_name_val, branch_val, cgpa_input, all_skills, projects_input, certifications_input)
                 if success: 
                     st.success(msg)
                     del st.session_state['extracted_resume']

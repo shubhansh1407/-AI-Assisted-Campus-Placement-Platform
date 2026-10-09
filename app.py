@@ -75,7 +75,14 @@ if not st.session_state['logged_in']:
     st.stop()
 
 # IF LOGGED IN
-st.sidebar.markdown(f"**Logged in as: {st.session_state['username']} ({st.session_state['role'].capitalize()})**")
+display_name = st.session_state['username']
+if st.session_state['role'] == 'student':
+    from database.database import get_student_by_name
+    student_record = get_student_by_name(st.session_state['username'])
+    if student_record and student_record['full_name']:
+        display_name = student_record['full_name']
+
+st.sidebar.markdown(f"**Logged in as: {display_name} ({st.session_state['role'].capitalize()})**")
 if st.sidebar.button("Logout"):
     st.session_state['logged_in'] = False
     st.session_state['role'] = None

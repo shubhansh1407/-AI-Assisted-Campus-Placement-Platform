@@ -52,11 +52,20 @@ with tab1:
 with tab2:
     st.subheader("Add a Placement Record")
     
-    student_names = get_existing_student_names()
+    from database.database import get_students
+    students_data = get_students()
+    student_display_options = []
+    display_to_username = {}
+    if students_data:
+        for s in students_data:
+            disp = f"{s['full_name']} ({s['name']})" if s.get('full_name') and str(s.get('full_name')).strip() else s['name']
+            student_display_options.append(disp)
+            display_to_username[disp] = s['name']
+            
     company_names = get_company_names()
     
     with st.form("add_placement_form"):
-        selected_student = st.selectbox("Student Name", options=[""] + student_names) if student_names else st.text_input("Student Name (Enter manually)")
+        selected_student_disp = st.selectbox("Student Name", options=[""] + student_display_options) if student_display_options else st.text_input("Student Name (Enter manually)")
         selected_company = st.selectbox("Company Name", options=[""] + company_names) if company_names else st.text_input("Company Name (Enter manually)")
         role_p = st.text_input("Role")
         
@@ -66,6 +75,7 @@ with tab2:
         submitted_placement = st.form_submit_button("Save Placement Record")
         
         if submitted_placement:
+            selected_student = display_to_username.get(selected_student_disp, selected_student_disp)
             if not selected_student or not selected_student.strip():
                 st.error("Student Name cannot be empty.")
             elif not selected_company or not selected_company.strip():
@@ -83,7 +93,13 @@ with tab2:
     st.subheader("Existing Placements")
     placements_data = get_placements()
     if placements_data:
-        st.dataframe(pd.DataFrame(placements_data), use_container_width=True)
+        df_p = pd.DataFrame(placements_data)
+        if students_data:
+            df_s = pd.DataFrame(students_data)
+            df_p = pd.merge(df_p, df_s[['name', 'full_name']], left_on='student_name', right_on='name', how='left')
+            df_p['student_name'] = df_p.apply(lambda r: f"{r['full_name']} ({r['student_name']})" if pd.notnull(r.get('full_name')) and str(r.get('full_name')).strip() else r['student_name'], axis=1)
+            df_p.drop(columns=['name', 'full_name'], inplace=True, errors='ignore')
+        st.dataframe(df_p, use_container_width=True)
     else:
         st.info("No placement records found.")
 

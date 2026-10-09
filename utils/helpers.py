@@ -1,7 +1,12 @@
 STANDARDIZED_SKILLS = [
-    "Python", "Java", "C++", "SQL", "Pandas", "NumPy",
-    "Machine Learning", "Excel", "Power BI", "Statistics",
-    "HTML", "CSS", "JavaScript", "React", "Git", "Communication"
+    "Python", "Java", "C", "C++", "SQL", "Pandas", "NumPy",
+    "Machine Learning", "Deep Learning", "TensorFlow", "NLP",
+    "Excel", "Power BI", "Tableau", "Statistics",
+    "HTML", "CSS", "JavaScript", "React", "Node.js", "Express", "Django", "Spring Boot",
+    "Git", "Docker", "Kubernetes", "AWS",
+    "Go", "MongoDB", "Data Structures", "Algorithms", "OOP",
+    "AutoCAD", "SolidWorks", "MATLAB", "Microcontrollers", "PLC", "SCADA", "VHDL", "Verilog", "Robotics",
+    "Communication"
 ]
 
 def apply_student_sidebar_hiding():

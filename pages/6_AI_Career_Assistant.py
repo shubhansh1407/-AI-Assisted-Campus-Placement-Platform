@@ -22,12 +22,24 @@ with tab1:
     with colA:
         students_data = get_students()
         if students_data:
-            student_names = [s['name'] for s in students_data]
+            df_s = pd.DataFrame(students_data)
+            df_s['display_name'] = df_s.apply(
+                lambda row: f"{row['full_name']} ({row['name']})" if pd.notnull(row.get('full_name')) and str(row.get('full_name')).strip() else row['name'], 
+                axis=1
+            )
+            
             if st.session_state['role'] == 'admin':
-                selected_student = st.selectbox("Profile Context (Optional):", ["(None)"] + student_names)
+                display_options = ["(None)"] + df_s['display_name'].tolist()
+                selected_display = st.selectbox("Profile Context (Optional):", display_options)
+                if selected_display == "(None)":
+                    selected_student = "(None)"
+                else:
+                    selected_student = df_s[df_s['display_name'] == selected_display].iloc[0]['name']
             else:
                 selected_student = st.session_state['username']
-                st.info(f"Context: {selected_student}")
+                student_row = df_s[df_s['name'] == selected_student]
+                display_name = student_row.iloc[0]['display_name'] if not student_row.empty else selected_student
+                st.info(f"Context: {display_name}")
         else:
             selected_student = "(None)"
             

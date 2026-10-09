@@ -23,12 +23,20 @@ else:
     
     col1, col2 = st.columns(2)
     with col1:
-        student_names = df_students['name'].tolist()
+        # Create a display name combining full name and username
+        df_students['display_name'] = df_students.apply(
+            lambda row: f"{row['full_name']} ({row['name']})" if pd.notnull(row.get('full_name')) and str(row.get('full_name')).strip() else row['name'], 
+            axis=1
+        )
+        
         if st.session_state['role'] == 'admin':
-            selected_student = st.selectbox("Select Student", student_names)
+            selected_display = st.selectbox("Select Student", df_students['display_name'].tolist())
+            selected_student = df_students[df_students['display_name'] == selected_display].iloc[0]['name']
         else:
             selected_student = st.session_state['username']
-            st.info(f"Student: {selected_student}")
+            student_row = df_students[df_students['name'] == selected_student]
+            display_name = student_row.iloc[0]['display_name'] if not student_row.empty else selected_student
+            st.info(f"Student: {display_name}")
     
     with col2:
         df_roles['company_role'] = df_roles['company_name'] + " - " + df_roles['role']
